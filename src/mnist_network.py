@@ -21,7 +21,15 @@ class Network:
   def feed_forward(self, a1: list[float]):
     """
     Feed forward the input through the network and return the activations and the weighted sums of the neurons.
-    First activation layer should be of shape (784,1).
+    Parameters:
+    a1: list[float] - First activation layer should be of shape (784,1).
+    Returns:
+    z2: list[list[float]] - Weighted sum of the second layer.
+    z3: list[list[float]] - Weighted sum of the third layer.
+    z4: list[list[float]] - Weighted sum of the fourth layer.
+    a2: list[list[float]] - Activations of the second layer.
+    a3: list[list[float]] - Activations of the third layer.
+    a4: list[list[float]] - Activations of the fourth layer
     """
     z2 = self.sigmoid(np.dot(self.W2, a1) + self.b2)
     a2 = self.sigmoid(z2)
@@ -35,6 +43,16 @@ class Network:
 
   def SGD(self, train_data: list[tuple[list[float], int]], batch_size: int, epochs: int, l_rate: float, 
           test_data: list[tuple[list[float], int]] = None):
+    """
+    Train the network using stochastic gradient descent.
+    Parameters:
+    train_data: list[tuple[list[float], int]] - Training data.
+    batch_size: int - Size of the batch for SGD.
+    epochs: int - Number of epochs.
+    l_rate: float - Learning rate.
+    test_data: list[tuple[list[float], int]] - By default None, if provided the network will evaluate itself 
+    on the test data. 
+    """
     n = len(train_data)
     for i in range(epochs):
       random.shuffle(train_data)
@@ -51,6 +69,14 @@ class Network:
 
 
   def gradient_descent(self, x: list[list[float]], l_rate: float, y, batch_size: int):
+    """
+    Perform gradient descent on the network parameters.
+    Parameters:
+    x: list[list[float]] - Input data of shape (784, batch_size).
+    l_rate: float - Learning rate.
+    y: list[list[int]] - One hot encoded labels of shape (10, batch_size).
+    batch_size: int - Size of the batch for SGD.
+    """
     dw2, dw3, dw4, db2, db3, db4  = self.backprop(x, y)
 
     l_rate = l_rate/batch_size 
@@ -63,6 +89,19 @@ class Network:
   
 
   def backprop(self, x:list[list[float]], y:list[list[int]]):
+    """
+    Perform backpropagation on the network.
+    Parameters:
+    x: list[list[float]] - Input data of shape (784, batch_size).
+    y: list[list[int]] - One hot encoded labels of shape (10, batch_size).
+    Returns:
+    dw2: list[list[float]] - Gradient of the weights of the second layer.
+    dw3: list[list[float]] - Gradient of the weights of the third layer.
+    dw4: list[list[float]] - Gradient of the weights of the fourth layer.
+    db2: list[list[float]] - Gradient of the biases of the second layer.
+    db3: list[list[float]] - Gradient of the biases of the third layer.
+    db4: list[list[float]] - Gradient of the biases of the fourth layer.
+    """
     z2, z3, z4, a2, a3, a4 = self.feed_forward(x)
     delta_4 = (2*(a4 - y.T)) * self.d_sigmoid(z4)
     db4 = 1 * delta_4
@@ -85,12 +124,26 @@ class Network:
     return self.sigmoid(x) * (1 - self.sigmoid(x)) 
   
   def one_hot_encode(self, y: tuple[int]):
+    """
+    One hot encode the labels. Example: 5 -> [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+    Parameters:
+    y: tuple[int] - Labels.
+    Returns:
+    list[list[int]] - One hot encoded labels.
+    """
     encoded = np.zeros((len(y), 10))
     for i in range(len(y)):
       encoded[i][y[i]] = 1
     return encoded
   
   def evaluate(self, test_data: list[tuple[list[list[float]], int]]):
+    """
+    Evaluate the network on the test data.
+    Parameters:
+    test_data: list[tuple[list[list[float]], int]] - Test data.
+    Returns:
+    int - Number of correct predictions.
+    """
     test_results = [(np.argmax(self.feed_forward(x.reshape((784,1)))[5]), y)
                         for (x, y) in test_data]
     return sum(int(x == y) for (x, y) in test_results)
